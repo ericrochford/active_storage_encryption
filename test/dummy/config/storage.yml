@@ -13,12 +13,16 @@ encrypted_disk:
   root: <%= Rails.root.join("storage") %>
   private_url_policy: stream
 
+encrypted_disk_mirror:
+  service: EncryptedDisk
+  root: <%= Rails.root.join("storage", "mirror") %>
+  private_url_policy: stream
+
 encrypted_mirror:
   service: EncryptedMirror
-  primary:
-    - encrypted_disk
+  primary: encrypted_disk
   mirrors:
-    - test
+    - encrypted_disk_mirror
 
 encrypted_gcs_service:
   service: EncryptedGCS
