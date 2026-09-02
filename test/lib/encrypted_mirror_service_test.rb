@@ -153,6 +153,20 @@ class ActiveStorageEncryption::EncryptedMirrorServiceTest < ActiveSupport::TestC
     assert_equal chunk_from_upload, @service.download_chunk(storage_blob_key, range, encryption_key: k)
   end
 
+  # The `service: EncryptedMirror` key in storage.yml makes Rails require
+  # "active_storage/service/encrypted_mirror_service" and instantiate
+  # ActiveStorage::Service::EncryptedMirrorService. None of the tests above go
+  # through that path (they instantiate the service class directly), so this
+  # test guards the shim file that Rails needs to be able to require.
+  def test_gets_resolved_from_the_storage_yml_configuration
+    service = ActiveStorage::Blob.services.fetch(:encrypted_mirror)
+
+    assert_kind_of ActiveStorageEncryption::EncryptedMirrorService, service
+    assert service.encrypted?
+    assert_kind_of ActiveStorageEncryption::EncryptedDiskService, service.primary
+    assert_equal :stream, service.private_url_policy # Delegated to the primary
+  end
+
   def generate_random_binary_string(size = 17.kilobytes + 13)
     Random.bytes(size)
   end
